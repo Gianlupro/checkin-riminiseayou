@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Check-in Ospiti</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f7f3ee;
+    --warm-white: #fdfaf7;
+    --terracotta: #c4714a;
+    --terracotta-light: #d9916e;
+    --charcoal: #2c2825;
+    --mid: #7a6f68;
+    --border: #e0d8d0;
+    --gold: #b8924f;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--charcoal);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--charcoal);
+    color: var(--cream);
+    text-align: center;
+    padding: 52px 24px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 60% 0%, rgba(196,113,74,.35) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .header-tag {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--terracotta-light);
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.2rem, 6vw, 3.6rem);
+    font-weight: 300;
+    letter-spacing: 1px;
+    line-height: 1.1;
+  }
+  .header h1 em { font-style: italic; color: var(--terracotta-light); }
+  .header-sub {
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 300;
+    color: rgba(247,243,238,.6);
+    letter-spacing: .5px;
+  }
+
+  /* LANG FLAGS */
+  .lang-switcher {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+  }
+  .lang-flag {
+    background: none;
+    border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 4px;
+    padding: 4px 7px;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    transition: border-color .2s, background .2s;
+    display: flex;
+    align-items: center;
+  }
+  .lang-flag:hover { border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.08); }
+  .lang-flag.active { border-color: var(--terracotta-light); background: rgba(196,113,74,.2); }
+  /* MAIN CONTENT */
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* SECTION CARD */
+  .card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px 32px 28px;
+    margin-bottom: 20px;
+    position: relative;
+    transition: box-shadow .25s;
+  }
+  .card:hover { box-shadow: 0 4px 24px rgba(44,40,37,.06); }
+
+  .card-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--charcoal);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* GUEST CARD */
+  .guest-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--terracotta);
+    border-radius: 4px;
+    padding: 28px 28px 20px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .guest-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+  .guest-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    font-weight: 400;
+    color: var(--charcoal);
+  }
+  .guest-number span {
+    display: inline-block;
+    width: 28px; height: 28px;
+    background: var(--terracotta);
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    margin-right: 10px;
+  }
+  .btn-remove {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--mid);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    padding: 5px 14px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-remove:hover {
+    border-color: #c0392b;
+    color: #c0392b;
+    background: rgba(192,57,43,.04);
+  }
+
+  /* FORM GRID */
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media(max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .card { padding: 22px 18px; }
+    .guest-card { padding: 20px 16px; }
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+  label .req { color: var(--terracotta); margin-left: 2px; }
+
+  input, select, textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--charcoal);
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 14px;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--terracotta);
+    box-shadow: 0 0 0 3px rgba(196,113,74,.12);
+    background: var(--warm-white);
+  }
+  input::placeholder, textarea::placeholder { color: #bbb; }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a6f68' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+  /* CHECKBOX */
+  .checkbox-field { flex-direction: row; align-items: center; gap: 10px; margin-top: 4px; }
+  .checkbox-field label { font-size: 13px; letter-spacing: .2px; text-transform: none; color: var(--charcoal); font-weight: 400; cursor: pointer; }
+  .checkbox-field input[type="checkbox"] {
+    width: 18px; height: 18px; flex-shrink: 0;
+    accent-color: var(--terracotta);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  /* ADD GUEST */
+  .btn-add-guest {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: 1.5px dashed var(--terracotta);
+    color: var(--terracotta);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 13px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+    transition: all .22s;
+    margin-top: 4px;
+    letter-spacing: .5px;
+  }
+  .btn-add-guest:hover {
+    background: rgba(196,113,74,.06);
+    border-style: solid;
+  }
+  .btn-add-guest svg { flex-shrink: 0; }
+
+  /* PRIVACY */
+  .privacy-block {
+    background: rgba(196,113,74,.05);
+    border: 1px solid rgba(196,113,74,.18);
+    border-radius: 4px;
+    padding: 16px 20px;
+    font-size: 12px;
+    color: var(--mid);
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+  .privacy-block strong { color: var(--charcoal); }
+
+  /* SUBMIT */
+  .submit-area { text-align: center; margin-top: 36px; }
+  .btn-submit {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: var(--charcoal);
+    color: var(--cream);
+    border: none;
+    padding: 18px 52px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background .22s, transform .15s;
+  }
+  .btn-submit:hover { background: var(--terracotta); transform: translateY(-1px); }
+  .btn-submit:active { transform: translateY(0); }
+
+  /* SUCCESS */
+  .success-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(44,40,37,.6);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .success-overlay.show { display: flex; }
+  .success-box {
+    background: var(--warm-white);
+    border-radius: 6px;
+    padding: 52px 48px;
+    text-align: center;
+    max-width: 420px;
+    width: 90%;
+    border-top: 4px solid var(--terracotta);
+  }
+  .success-icon {
+    width: 60px; height: 60px;
+    background: rgba(196,113,74,.12);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 22px;
+  }
+  .success-box h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.9rem;
+    font-weight: 300;
+    margin-bottom: 12px;
+  }
+  .success-box p { font-size: 14px; color: var(--mid); line-height: 1.6; }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 20px; }
+
+  /* SECTION TITLE */
+  .section-intro {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    color: var(--mid);
+    margin-bottom: 22px;
+  }
+
+  /* DOC PHOTO UPLOAD */
+  .doc-upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 4px;
+    background: var(--cream);
+    padding: 0;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    overflow: hidden;
+    position: relative;
+  }
+  .doc-upload-zone:hover { border-color: var(--terracotta); background: rgba(196,113,74,.03); }
+  .doc-upload-zone.has-file { border-color: var(--terracotta); border-style: solid; }
+  .doc-upload-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 18px 14px;
+    text-align: center;
+  }
+  .doc-upload-btn-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--terracotta);
+    letter-spacing: .3px;
+  }
+  .doc-upload-hint {
+    font-size: 11px;
+    color: var(--mid);
+    line-height: 1.5;
+    max-width: 260px;
+  }
+  .doc-upload-preview {
+    display: none;
+    width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+    border-radius: 2px;
+  }
+  .doc-upload-zone.has-file .doc-upload-inner { padding: 8px 14px; }
+  .doc-upload-zone.has-file .doc-upload-preview { display: block; }
+  .doc-upload-zone.has-file .doc-upload-hint { display: none; }
+  .doc-upload-input { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="lang-switcher">
+    <button class="lang-flag active" onclick="setLang('it')" title="Italiano">🇮🇹</button>
+    <button class="lang-flag" onclick="setLang('en')" title="English">🇬🇧</button>
+  </div>
+  <div class="header-tag" data-i18n="header_tag">Modulo di registrazione</div>
+  <h1>Benvenuti a Rimini Sea You</h1>
+  <h1 style="font-size: clamp(1.3rem, 3.5vw, 2rem); font-weight:300; margin-top:8px;"><em data-i18n="header_checkin">Check-in</em> <span data-i18n="header_guests">Ospiti</span></h1>
+  <div class="header-sub" data-i18n="header_sub">Compila il modulo prima del tuo arrivo · I dati sono trattati ai sensi del GDPR</div>
+</div>
+
+<div class="container">
+
+  <!-- BENVENUTO -->
+  <div class="card" style="border-left: 4px solid var(--terracotta); background: linear-gradient(135deg, #fff8f4 0%, var(--warm-white) 100%);">
+    <p style="font-size:14px; line-height:1.75; color:var(--charcoal);">
+      <span data-i18n="welcome_text">Per completare il check-in è <strong>obbligatorio compilare questo modulo</strong> con i dati di <strong>TUTTI gli ospiti</strong>.<br>
+      I dati sono richiesti dalla normativa italiana e verranno comunicati alle autorità competenti.</span><br>
+      <span style="display:inline-block; margin-top:10px; background:#fff3cd; border:1px solid #f0c040; border-radius:3px; padding:6px 12px; font-size:13px; font-weight:500; color:#7a5c00;" data-i18n="welcome_warning">
+        ⚠️ Senza la compilazione NON sarà possibile accedere all'alloggio.
+      </span><br>
+      <span style="display:inline-block; margin-top:10px; font-size:13px; color:var(--mid);" data-i18n="welcome_thanks">Grazie per la collaborazione!</span>
+    </p>
+  </div>
+
+  <!-- SOGGIORNO -->
+  <div class="card">
+    <div class="card-label" data-i18n="booking_label">Dettagli soggiorno</div>
+    <div class="card-title" data-i18n="booking_title">Informazioni sulla prenotazione</div>
+    <div class="grid grid-3">
+      <div class="field">
+        <label data-i18n="label_checkin">Data check-in <span class="req">*</span></label>
+        <input type="date" id="checkin-date" required>
+      </div>
+      <div class="field">
+        <label data-i18n="label_checkout">Data check-out <span class="req">*</span></label>
+        <input type="date" id="checkout-date" required>
+      </div>
+      <div class="field">
+        <label data-i18n="label_arrival">Orario previsto di arrivo <span class="req">*</span></label>
+        <input type="time" id="arrival-time" required>
+      </div>
+    </div>
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="field">
+        <label data-i18n="label_total_guests">N° totale ospiti <span class="req">*</span></label>
+        <select id="total-guests" required>
+          <option value="" data-i18n="select_placeholder">Seleziona</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- OSPITI -->
+  <div class="card">
+    <div class="card-label" data-i18n="guests_label">Registrazione ospiti</div>
+    <div class="card-title" data-i18n="guests_title">Dati anagrafici</div>
+    <p class="section-intro" data-i18n="guests_intro">Inserisci i dati di ogni ospite come riportati sul documento d'identità.</p>
+
+    <div id="guests-container"></div>
+
+    <button class="btn-add-guest" onclick="addGuest()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4"/><line x1="8" y1="4.5" x2="8" y2="11.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="4.5" y1="8" x2="11.5" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <span data-i18n="btn_add_guest">Aggiungi ospite</span>
+    </button>
+  </div>
+
+  <!-- PRIVACY -->
+  <div class="card">
+    <div class="card-label" data-i18n="privacy_label">Privacy & Consenso</div>
+    <div class="card-title" data-i18n="privacy_title">Informativa sul trattamento dei dati</div>
+    <div class="privacy-block">
+      <span data-i18n="privacy_text"><strong>Ai sensi del Reg. UE 2016/679 (GDPR)</strong>, i dati personali forniti saranno trattati dal titolare dell'alloggio esclusivamente per le finalità di registrazione degli ospiti, adempimenti di pubblica sicurezza (art. 109 TULPS) e gestione del soggiorno. I dati non saranno ceduti a terzi salvo obblighi di legge. Hai diritto di accedere, rettificare o cancellare i tuoi dati in qualsiasi momento.</span> <a href="privacy-policy.html" target="_blank" style="color:var(--terracotta); text-decoration:underline; text-underline-offset:3px;" data-i18n="privacy_link">Leggi l'informativa completa →</a>
+    </div>
+    <div style="margin-top:18px; display:flex; flex-direction:column; gap:12px;">
+      <div class="checkbox-field field">
+        <input type="checkbox" id="privacy-ok" required>
+        <label for="privacy-ok"><span data-i18n="privacy_check">Ho letto la <a href="privacy-policy.html" target="_blank" style="color:var(--terracotta); text-decoration:underline; text-underline-offset:3px;">Privacy Policy</a> e acconsento al trattamento dei dati</span> <span class="req">*</span></label>
+      </div>
+      <div class="checkbox-field field">
+        <input type="checkbox" id="rules-ok" required>
+        <label for="rules-ok"><span data-i18n="rules_check">Ho preso visione e accetto il regolamento della struttura</span> <span class="req">*</span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="submit-area">
+    <button class="btn-submit" onclick="submitForm()" data-i18n="btn_submit">Invia registrazione</button>
+  </div>
+
+</div>
+
+<!-- SUCCESS -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-box">
+    <div class="success-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M6 14.5l5.5 5.5L22 9" stroke="#c4714a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h2 data-i18n="success_title">Registrazione completata</h2>
+    <p data-i18n="success_text">Grazie! I tuoi dati sono stati ricevuti correttamente. Il tuo host ti contatterà per le istruzioni sul check-in. Ti auguriamo un ottimo soggiorno 🏡</p>
+  </div>
+</div>
+
+<script>
+  // ═══════════════════════════════════════════
+  //  TRANSLATIONS
+  // ═══════════════════════════════════════════
+  const translations = {
+    it: {
+      header_tag: 'Modulo di registrazione',
+      header_checkin: 'Check-in',
+      header_guests: 'Ospiti',
+      header_sub: 'Compila il modulo prima del tuo arrivo · I dati sono trattati ai sensi del GDPR',
+      welcome_text: 'Per completare il check-in è <strong>obbligatorio compilare questo modulo</strong> con i dati di <strong>TUTTI gli ospiti</strong>.<br>I dati sono richiesti dalla normativa italiana e verranno comunicati alle autorità competenti.',
+      welcome_warning: '⚠️ Senza la compilazione NON sarà possibile accedere all\'alloggio.',
+      welcome_thanks: 'Grazie per la collaborazione!',
+      booking_label: 'Dettagli soggiorno',
+      booking_title: 'Informazioni sulla prenotazione',
+      label_checkin: 'Data check-in <span class="req">*</span>',
+      label_checkout: 'Data check-out <span class="req">*</span>',
+      label_arrival: 'Orario previsto di arrivo <span class="req">*</span>',
+      label_total_guests: 'N° totale ospiti <span class="req">*</span>',
+      select_placeholder: 'Seleziona',
+      guests_label: 'Registrazione ospiti',
+      guests_title: 'Dati anagrafici',
+      guests_intro: 'Inserisci i dati di ogni ospite come riportati sul documento d\'identità.',
+      btn_add_guest: 'Aggiungi ospite',
+      privacy_label: 'Privacy & Consenso',
+      privacy_title: 'Informativa sul trattamento dei dati',
+      privacy_text: '<strong>Ai sensi del Reg. UE 2016/679 (GDPR)</strong>, i dati personali forniti saranno trattati dal titolare dell\'alloggio esclusivamente per le finalità di registrazione degli ospiti, adempimenti di pubblica sicurezza (art. 109 TULPS) e gestione del soggiorno. I dati non saranno ceduti a terzi salvo obblighi di legge. Hai diritto di accedere, rettificare o cancellare i tuoi dati in qualsiasi momento.',
+      privacy_link: 'Leggi l\'informativa completa →',
+      privacy_check: 'Ho letto la <a href="privacy-policy.html" target="_blank" style="color:var(--terracotta);text-decoration:underline;text-underline-offset:3px;">Privacy Policy</a> e acconsento al trattamento dei dati',
+      rules_check: 'Ho preso visione e accetto il regolamento della struttura',
+      btn_submit: 'Invia registrazione',
+      success_title: 'Registrazione completata',
+      success_text: 'Grazie! I tuoi dati sono stati ricevuti correttamente. Il tuo host ti contatterà per le istruzioni sul check-in. Ti auguriamo un ottimo soggiorno 🏡',
+      // guest card
+      guest_lead: 'Ospite principale (referente prenotazione)',
+      guest_extra: 'Ospite aggiuntivo',
+      btn_remove: 'Rimuovi',
+      f_name: 'Nome', f_surname: 'Cognome', f_dob: 'Data di nascita',
+      f_pob: 'Luogo di nascita', f_nationality: 'Nazionalità',
+      f_doctype: 'Tipo documento', f_docnum: 'Numero documento', f_docexp: 'Scadenza documento',
+      f_residence: 'Comune / Paese di residenza', f_cf: 'Codice fiscale',
+      f_email: 'Email di contatto', f_phone: 'Numero di telefono',
+      f_doc_photo: 'Foto documento d\'identità',
+      f_doc_photo_hint: 'Carica una foto o scatta un\'immagine del documento inserito sopra. Assicurati che tutti i dati siano leggibili.',
+      f_doc_photo_btn: '📷 Scatta o carica foto',
+      f_doc_photo_change: 'Cambia foto',
+      alert_doc_photo: 'Carica la foto del documento per ogni ospite prima di procedere.',
+      doc_select: 'Seleziona', doc_ci: 'Carta d\'identità', doc_passport: 'Passaporto',
+      doc_license: 'Patente di guida', doc_permit: 'Permesso di soggiorno',
+      ph_name: 'Mario', ph_surname: 'Rossi', ph_pob: 'Roma (RM)',
+      ph_nationality: 'Italiana', ph_docnum: 'AA1234567',
+      ph_residence: 'Milano', ph_cf: 'RSSMRA80A01H501Z',
+      ph_email: 'mario.rossi@email.com', ph_phone: '+39 333 1234567',
+      // alerts
+      alert_fields: 'Compila tutti i campi obbligatori della prenotazione.',
+      alert_privacy: 'Devi accettare la privacy policy e il regolamento per procedere.',
+      alert_guest: 'Aggiungi almeno un ospite.',
+      alert_sending: 'Invio in corso…',
+      alert_neterror: 'Errore di rete. Controlla la connessione e riprova.',
+    },
+    en: {
+      header_tag: 'Registration form',
+      header_checkin: 'Check-in',
+      header_guests: 'Guests',
+      header_sub: 'Complete the form before your arrival · Data processed under GDPR',
+      welcome_text: 'To complete check-in, it is <strong>mandatory to fill in this form</strong> with the details of <strong>ALL guests</strong>.<br>The data is required by Italian law and will be reported to the competent authorities.',
+      welcome_warning: '⚠️ Without completing this form, access to the property will NOT be possible.',
+      welcome_thanks: 'Thank you for your cooperation!',
+      booking_label: 'Stay details',
+      booking_title: 'Booking information',
+      label_checkin: 'Check-in date <span class="req">*</span>',
+      label_checkout: 'Check-out date <span class="req">*</span>',
+      label_arrival: 'Expected arrival time <span class="req">*</span>',
+      label_total_guests: 'Total number of guests <span class="req">*</span>',
+      select_placeholder: 'Select',
+      guests_label: 'Guest registration',
+      guests_title: 'Personal details',
+      guests_intro: 'Enter each guest\'s details exactly as shown on their identity document.',
+      btn_add_guest: 'Add guest',
+      privacy_label: 'Privacy & Consent',
+      privacy_title: 'Data processing notice',
+      privacy_text: '<strong>Pursuant to EU Reg. 2016/679 (GDPR)</strong>, the personal data provided will be processed by the property owner solely for the purposes of guest registration, public security obligations (art. 109 TULPS) and stay management. Data will not be shared with third parties except as required by law. You have the right to access, rectify or delete your data at any time.',
+      privacy_link: 'Read the full privacy policy →',
+      privacy_check: 'I have read the <a href="privacy-policy.html" target="_blank" style="color:var(--terracotta);text-decoration:underline;text-underline-offset:3px;">Privacy Policy</a> and consent to the processing of my data',
+      rules_check: 'I have read and accept the property rules',
+      btn_submit: 'Submit registration',
+      success_title: 'Registration complete',
+      success_text: 'Thank you! Your details have been received. Your host will contact you with check-in instructions. Enjoy your stay! 🏡',
+      // guest card
+      guest_lead: 'Lead guest (booking contact)',
+      guest_extra: 'Additional guest',
+      btn_remove: 'Remove',
+      f_name: 'First name', f_surname: 'Last name', f_dob: 'Date of birth',
+      f_pob: 'Place of birth', f_nationality: 'Nationality',
+      f_doctype: 'Document type', f_docnum: 'Document number', f_docexp: 'Document expiry',
+      f_residence: 'City / Country of residence', f_cf: 'Italian tax code (codice fiscale)',
+      f_email: 'Contact email', f_phone: 'Phone number',
+      f_doc_photo: 'Identity document photo',
+      f_doc_photo_hint: 'Upload or take a photo of the identity document entered above. Make sure all details are clearly visible.',
+      f_doc_photo_btn: '📷 Take or upload photo',
+      f_doc_photo_change: 'Change photo',
+      alert_doc_photo: 'Please upload a photo of the identity document for each guest before proceeding.',
+      doc_select: 'Select', doc_ci: 'Identity card', doc_passport: 'Passport',
+      doc_license: 'Driving licence', doc_permit: 'Residence permit',
+      ph_name: 'John', ph_surname: 'Smith', ph_pob: 'London',
+      ph_nationality: 'British', ph_docnum: 'AA1234567',
+      ph_residence: 'London', ph_cf: 'RSSMRA80A01H501Z',
+      ph_email: 'john.smith@email.com', ph_phone: '+44 7700 900000',
+      // alerts
+      alert_fields: 'Please fill in all required booking fields.',
+      alert_privacy: 'You must accept the privacy policy and property rules to proceed.',
+      alert_guest: 'Please add at least one guest.',
+      alert_sending: 'Sending…',
+      alert_neterror: 'Network error. Please check your connection and try again.',
+    }
+  };
+
+  let currentLang = 'it';
+
+  function setLang(lang) {
+    currentLang = lang;
+    document.querySelectorAll('.lang-flag').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.lang-flag[onclick="setLang('${lang}')"]`).classList.add('active');
+    const t = translations[lang];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (t[key] !== undefined) el.innerHTML = t[key];
+    });
+    // Rebuild guest cards in new language
+    const container = document.getElementById('guests-container');
+    const count = container.querySelectorAll('.guest-card').length;
+    container.innerHTML = '';
+    guestCount = 0;
+    for (let i = 0; i < count; i++) addGuest();
+  }
+
+  let guestCount = 0;
+
+  function buildGuestCard(n) {
+    const t = translations[currentLang];
+    const isFirst = n === 1;
+    return `
+    <div class="guest-card" id="guest-${n}">
+      <div class="guest-header">
+        <div class="guest-number"><span>${n}</span> ${isFirst ? t.guest_lead : t.guest_extra}</div>
+        ${!isFirst ? `<button class="btn-remove" onclick="removeGuest(${n})">${t.btn_remove}</button>` : ''}
+      </div>
+      <div class="grid grid-3">
+        <div class="field"><label>${t.f_name} <span class="req">*</span></label><input type="text" placeholder="${t.ph_name}" required></div>
+        <div class="field"><label>${t.f_surname} <span class="req">*</span></label><input type="text" placeholder="${t.ph_surname}" required></div>
+        <div class="field"><label>${t.f_dob} <span class="req">*</span></label><input type="date" required></div>
+      </div>
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="field"><label>${t.f_pob} <span class="req">*</span></label><input type="text" placeholder="${t.ph_pob}"></div>
+        <div class="field"><label>${t.f_nationality} <span class="req">*</span></label><input type="text" placeholder="${t.ph_nationality}"></div>
+      </div>
+      <div class="grid grid-3" style="margin-top:16px">
+        <div class="field"><label>${t.f_doctype} <span class="req">*</span></label>
+          <select required>
+            <option value="">${t.doc_select}</option>
+            <option>${t.doc_ci}</option>
+            <option>${t.doc_passport}</option>
+            <option>${t.doc_license}</option>
+            <option>${t.doc_permit}</option>
+          </select>
+        </div>
+        <div class="field"><label>${t.f_docnum} <span class="req">*</span></label><input type="text" placeholder="${t.ph_docnum}"></div>
+        <div class="field"><label>${t.f_docexp} <span class="req">*</span></label><input type="date"></div>
+      </div>
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="field"><label>${t.f_residence}</label><input type="text" placeholder="${t.ph_residence}"></div>
+        <div class="field"><label>${t.f_cf}${isFirst ? ' <span class="req">*</span>' : ''}</label>
+          <input type="text" placeholder="${t.ph_cf}" ${isFirst ? 'required' : ''} style="text-transform:uppercase"></div>
+      </div>
+      ${isFirst ? `
+      <hr class="divider" style="margin-top:20px">
+      <div class="grid grid-2">
+        <div class="field"><label>${t.f_email} <span class="req">*</span></label><input type="email" placeholder="${t.ph_email}" required></div>
+        <div class="field"><label>${t.f_phone} <span class="req">*</span></label><input type="tel" placeholder="${t.ph_phone}" required></div>
+      </div>` : ''}
+      <hr class="divider" style="margin-top:20px">
+      <div class="field">
+        <label>${t.f_doc_photo} <span class="req">*</span></label>
+        <div class="doc-upload-zone" id="upload-zone-${n}" onclick="document.getElementById('doc-input-${n}').click()">
+          <img class="doc-upload-preview" id="doc-preview-${n}" src="" alt="document preview">
+          <div class="doc-upload-inner">
+            <span class="doc-upload-btn-label" id="doc-btn-label-${n}">${t.f_doc_photo_btn}</span>
+            <span class="doc-upload-hint">${t.f_doc_photo_hint}</span>
+          </div>
+        </div>
+        <input type="file" class="doc-upload-input" id="doc-input-${n}" accept="image/*" capture="environment"
+          onchange="handleDocUpload(${n}, this)">
+      </div>
+    </div>`;
+  }
+
+  function handleDocUpload(n, input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const zone = document.getElementById(`upload-zone-${n}`);
+      const preview = document.getElementById(`doc-preview-${n}`);
+      const btnLabel = document.getElementById(`doc-btn-label-${n}`);
+      preview.src = e.target.result;
+      zone.classList.add('has-file');
+      btnLabel.textContent = translations[currentLang].f_doc_photo_change;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function addGuest() {
+    guestCount++;
+    document.getElementById('guests-container').insertAdjacentHTML('beforeend', buildGuestCard(guestCount));
+  }
+
+  function removeGuest(n) {
+    const el = document.getElementById(`guest-${n}`);
+    if (el) { el.style.opacity='0'; el.style.transform='scale(.97)'; el.style.transition='all .2s'; setTimeout(()=>el.remove(),200); }
+  }
+
+  async function submitForm() {
+    const t = translations[currentLang];
+    const privacyOk = document.getElementById('privacy-ok').checked;
+    const rulesOk   = document.getElementById('rules-ok').checked;
+    const checkin   = document.getElementById('checkin-date').value;
+    const checkout  = document.getElementById('checkout-date').value;
+    const arrival   = document.getElementById('arrival-time').value;
+    const totGuests = document.getElementById('total-guests').value;
+
+    if (!checkin || !checkout || !arrival || !totGuests) { alert(t.alert_fields); return; }
+    if (!privacyOk || !rulesOk) { alert(t.alert_privacy); return; }
+    if (guestCount === 0) { alert(t.alert_guest); return; }
+
+    for (let i = 1; i <= guestCount; i++) {
+      const input = document.getElementById(`doc-input-${i}`);
+      if (!input || !input.files || input.files.length === 0) {
+        alert(t.alert_doc_photo); return;
+      }
+    }
+
+    const btn = document.querySelector('.btn-submit');
+    btn.textContent = t.alert_sending;
+    btn.disabled = true;
+
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0I2X0hXJQL-WqkAkUsdE1pE21Zl0X93-AQg0Zapj4eOBB-1r-TerlgcfqUskYhG4jGA/exec';
+
+    const toBase64 = file => new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+
+    try {
+      const guestCards = document.querySelectorAll('.guest-card');
+
+      // ── 1. Costruisce i parametri URL con tutti i dati testuali ──
+      const params = new URLSearchParams();
+      params.append('action',        'saveData');
+      params.append('Check_in',      checkin);
+      params.append('Check_out',     checkout);
+      params.append('Arrival_time',  arrival);
+      params.append('Total_guests',  totGuests);
+      params.append('Privacy_GDPR',  'Accepted');
+      params.append('House_rules',   'Accepted');
+      params.append('Num_guests',    guestCards.length);
+
+      for (let i = 0; i < guestCards.length; i++) {
+        const card    = guestCards[i];
+        const n       = i + 1;
+        const inputs  = card.querySelectorAll('input');
+        const selects = card.querySelectorAll('select');
+
+        params.append(`G${n}_FirstName`,   inputs[0]?.value || '');
+        params.append(`G${n}_LastName`,    inputs[1]?.value || '');
+        params.append(`G${n}_DOB`,         inputs[2]?.value || '');
+        params.append(`G${n}_POB`,         inputs[3]?.value || '');
+        params.append(`G${n}_Nationality`, inputs[4]?.value || '');
+        params.append(`G${n}_DocType`,     selects[0]?.value || '');
+        params.append(`G${n}_DocNumber`,   inputs[5]?.value || '');
+        params.append(`G${n}_DocExpiry`,   inputs[6]?.value || '');
+        params.append(`G${n}_Residence`,   inputs[7]?.value || '');
+        params.append(`G${n}_TaxCode`,     inputs[8]?.value || '');
+        if (n === 1) {
+          params.append('G1_Email', inputs[9]?.value  || '');
+          params.append('G1_Phone', inputs[10]?.value || '');
+        }
+      }
+
+      // ── 2. Prima chiamata: salva i dati testuali (GET, no-cors) ──
+      await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {
+        method: 'GET',
+        mode:   'no-cors'
+      });
+
+      // ── 3. Seconda chiamata per ogni foto (una alla volta) ──
+      for (let i = 0; i < guestCards.length; i++) {
+        const card   = guestCards[i];
+        const n      = i + 1;
+        const inputs = card.querySelectorAll('input');
+        const photoInput = document.getElementById(`doc-input-${n}`);
+
+        if (photoInput?.files[0]) {
+          const b64       = await toBase64(photoInput.files[0]);
+          const firstName = inputs[0]?.value || `Guest${n}`;
+          const lastName  = inputs[1]?.value || '';
+          const ext       = photoInput.files[0].name.split('.').pop() || 'jpg';
+
+          const photoParams = new URLSearchParams();
+          photoParams.append('action',     'savePhoto');
+          photoParams.append('checkin',    checkin);
+          photoParams.append('guestName',  `${firstName}_${lastName}`);
+          photoParams.append('guestNum',   n);
+          photoParams.append('photoName',  `Doc_${firstName}_${lastName}.${ext}`);
+          photoParams.append('photoData',  b64);
+
+          await fetch(`${APPS_SCRIPT_URL}?${photoParams.toString()}`, {
+            method: 'GET',
+            mode:   'no-cors'
+          });
+        }
+      }
+
+      // ── 4. Successo ──
+      document.getElementById('success-overlay').classList.add('show');
+      document.getElementById('success-overlay').addEventListener('click', () => {
+        document.getElementById('success-overlay').classList.remove('show');
+      });
+
+    } catch(e) {
+      alert(t.alert_neterror + '\n' + e.message);
+      btn.textContent = t.btn_submit;
+      btn.disabled = false;
+    }
+  }
+
+  // Init
+  addGuest();
+</script>
+</body>
+</html>
